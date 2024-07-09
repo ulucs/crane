@@ -114,7 +114,6 @@ let
         in
         ''
           [source.${name}]
-          registry = "${url}"
           replace-with = "nix-sources-${hashed}"
         ''
     )
