@@ -34,6 +34,7 @@ in
 , outputHashes ? { }
 , overrideVendorCargoPackage ? _: drv: drv
 , overrideVendorGitCheckout ? _: drv: drv
+, macosSandboxWorkaround ? false
 , registries ? null
 }:
 let
@@ -61,7 +62,7 @@ let
   )));
 
   vendoredRegistries = vendorCargoRegistries ({
-    inherit cargoConfigs lockPackages overrideVendorCargoPackage;
+    inherit cargoConfigs lockPackages overrideVendorCargoPackage macosSandboxWorkaround;
   } // optionalAttrs (registries != null) { inherit registries; });
 
   vendoredGit = vendorGitDeps {
