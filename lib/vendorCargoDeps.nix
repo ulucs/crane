@@ -48,6 +48,7 @@ in
 vendorMultipleCargoDeps ({
   inherit cargoConfigs;
   cargoLockParsedList = [ lock ];
+  macosSandboxWorkaround = args.macosSandboxWorkaround or false;
   outputHashes = args.outputHashes or { };
   overrideVendorCargoPackage = args.overrideVendorCargoPackage or (_: drv: drv);
   overrideVendorGitCheckout = args.overrideVendorGitCheckout or (_: drv: drv);

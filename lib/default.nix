@@ -88,6 +88,7 @@ let
       devShell = callPackage ./devShell.nix { };
       downloadCargoPackage = callPackage ./downloadCargoPackage.nix { };
       downloadCargoPackageFromGit = callPackage ./downloadCargoPackageFromGit.nix { };
+      downloadCargoRegistry = callPackage ./downloadCargoRegistry.nix { };
       filterCargoSources = callPackage ./filterCargoSources.nix { };
 
       fileset = {

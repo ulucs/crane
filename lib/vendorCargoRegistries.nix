@@ -1,5 +1,7 @@
 { downloadCargoPackage
+, downloadCargoRegistry
 , lib
+, stdenv
 , pkgsBuildBuild
 }:
 
@@ -44,6 +46,7 @@ in
 { cargoConfigs ? [ ]
 , lockPackages
 , overrideVendorCargoPackage ? _: drv: drv
+, macosSandboxWorkaround ? false
 , ...
 }@args:
 let
@@ -55,12 +58,18 @@ let
   lockedRegistryGroups = groupBy (p: p.source) lockedPackagesFromRegistry;
 
   vendorCrate = p: overrideVendorCargoPackage p (downloadCargoPackage p);
-  vendorSingleRegistry = packages: runCommandLocal "vendor-registry" { } ''
-    mkdir -p $out
-    ${concatMapStrings (p: ''
-      ln -s ${escapeShellArg (vendorCrate p)} $out/${escapeShellArg "${p.name}-${p.version}"}
-    '') packages}
-  '';
+  vendorSingleRegistry = packages:
+    if macosSandboxWorkaround then
+      runCommandLocal "vendor-whole-registry" { } ''
+        mkdir -p $out
+        for dir in ${escapeShellArg (downloadCargoRegistry { inherit packages; })}/*/; do ln -s "$(realpath "$dir")" "$out/''${dir##*/}"; done
+      '' else
+      runCommandLocal "vendor-registry" { } ''
+        mkdir -p $out
+        ${concatMapStrings (p: ''
+          ln -s ${escapeShellArg (vendorCrate p)} $out/${escapeShellArg "${p.name}-${p.version}"}
+        '') packages}
+      '';
 
   # Registries configured in cargo config
   parsedCargoConfigTomls = map (p: builtins.fromTOML (readFile p)) cargoConfigs;
