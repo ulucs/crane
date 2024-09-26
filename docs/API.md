@@ -60,8 +60,9 @@ newLib = craneLib.appendCrateRegistries [
 
   # Or even
   (lib.registryFromSparse {
-    url = "https://index.crates.io/";
-    sha256 = "d16740883624df970adac38c70e35cf077a2a105faa3862f8f99a65da96b14a3";
+    indexUrl = "https://index.crates.io/config.json";
+    configSha256 = "1cxgzdm1ipqmgwnq7kgym92axna7pfyhgfla63vl7dvydwn3m52v";
+    fetchurlExtraArgs = {};
   })
 ];
 ```
@@ -495,6 +496,8 @@ Except where noted below, all derivation attributes are delegated to
   `$CARGO_TARGET_DIR` (or default to `./target` if not set) and
   `$CARGO_BUILD_TARGET` (if set).
   - Default value: `"${CARGO_TARGET_DIR:-target}/${CARGO_BUILD_TARGET:-}/doc"`
+    if such a directory exists, otherwise falls back to
+    `"${CARGO_TARGET_DIR:-target}/doc"`
 
 #### Remove attributes
 The following attributes will be removed before being lowered to
@@ -503,7 +506,6 @@ environment variables during the build, you can bring them back via
 `.overrideAttrs`.
 * `cargoDocExtraArgs`
 * `cargoExtraArgs`
-* `docInstallRoot`
 
 ### `craneLib.cargoFmt`
 
@@ -913,6 +915,25 @@ craneLib.devShell {
     my-package-doc = craneLib.cargoDoc commonArgs;
     my-package-nextest = craneLib.cargoNextest commonArgs;
   };
+}
+```
+
+Note that it is possible to override the underlying `mkShell` (for example to
+customize the build environment further) like so:
+
+```nix
+let
+  moldDevShell = craneLib.devShell.override {
+    # For example, use the mold linker
+    mkShell = pkgs.mkShell.override {
+      stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.stdenv;
+    };
+  };
+in
+moldDevShell {
+  packages = [
+    # etc...
+  ];
 }
 ```
 
@@ -1358,6 +1379,47 @@ craneLib.registryFromGitIndex {
 #   "registry+https://github.com/Hirevo/alexandrie-index" = {
 #     downloadUrl = "https://crates.polomack.eu/api/v1/crates/{crate}/{version}/download";
 #     fetchurlExtraArgs = {};
+#   };
+# }
+```
+
+### `craneLib.registryFromSparse`
+
+`registryFromSparse :: set -> set`
+
+Prepares a (sparse) crate registry into a format that can be passed directly to
+`appendCrateRegistries` using the registry's download URL.
+
+If the registry in question has a stable download URL (which either never
+changes, or it does so very infrequently), then `registryFromDownloadUrl` is a
+great and lightweight choice for including the registry. To get started,
+download the registry's `config.json` and copy the value of the `dl` entry.
+
+If the registry's download endpoint changes more frequently and you would like
+to infer the configuration directly from a git revision, consider using
+`registryFromGitIndex` as an alternative.
+
+If the registry needs a special way of accessing crate sources the
+`fetchurlExtraArgs` set can be used to influence the behavior of fetching the
+crate sources (e.g. by setting `curlOptsList`)
+
+#### Required attributes
+* `indexUrl`: an HTTP URL to the registry's config.json
+* `configSha256`: a sha256 hash of the contents of config.json
+
+#### Optional attributes
+* `fetchurlExtraArgs`: a set of arguments which will be passed on to the
+  `fetchurl` for each crate being sourced from this registry
+
+```nix
+craneLib.registryFromSparse {
+  indexUrl = "https://index.crates.io/config.json";
+  configSha256 = "1cxgzdm1ipqmgwnq7kgym92axna7pfyhgfla63vl7dvydwn3m52v";
+}
+# {
+#   "sparse+https://index.crates.io/config.json/" = {
+#     downloadUrl = "https://static.crates.io/crates/{crate}/{version}/download";
+#     fetchurlExtraArgs = { };
 #   };
 # }
 ```

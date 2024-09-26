@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [0.19.0] - 2024-09-25
+
 ### Added
 * `taploFmt` is now available for checking TOML formatting
 
@@ -19,6 +21,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   available on `$PATH` and will instead directly reference `pkgs.jq`
 * `downloadCargoPackageFromGit` will now set `fetchLFS = true` when fetching git
   repos with defined output hashes
+
+### Fixed
+* `cargoDoc` correctly honors `docInstallRoot` when specified
+* `cargoDoc` falls back to installing from `./target/doc` even if
+  `$CARGO_BUILD_TARGET` is set but `./target/$CARGO_BUILD_TARGET/doc` does not
+  exist
 
 ### Removed
 * The deprecated top-level (flake) attribute `lib` no longer exists. Please use
@@ -68,7 +76,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [0.17.2] - 2024-05-26
 
 ### Fixed
-* `removeReferencesToVendoredSources` has been optimzed to search for source
+* `removeReferencesToVendoredSources` has been optimized to search for source
   references only once. For derivations which install many files, this phase can
   run up to 99% faster than before.
 * `cleanCargoToml` now cleans underscored versions of the same attributes (e.g.
@@ -734,6 +742,7 @@ files parsed as nix attribute sets.
 ## 0.1.0 - 2022-01-22
 - First release
 
+[0.19.0]: https://github.com/ipetkov/crane/compare/v0.18.1...v1.19.0
 [0.18.1]: https://github.com/ipetkov/crane/compare/v0.18.0...v1.18.1
 [0.18.0]: https://github.com/ipetkov/crane/compare/v0.17.3...v1.18.0
 [0.17.3]: https://github.com/ipetkov/crane/compare/v0.17.2...v1.17.3
