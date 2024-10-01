@@ -62,7 +62,7 @@ let
     if macosSandboxWorkaround then
       runCommandLocal "vendor-whole-registry" { } ''
         mkdir -p $out
-        for dir in ${escapeShellArg (downloadCargoRegistry { inherit packages; })}/*/; do ln -s "$(realpath "$dir")" "$out/''${dir##*/}"; done
+        for dir in ${escapeShellArg (downloadCargoRegistry { inherit packages overrideVendorCargoPackage; })}/*/; do ln -s "$(realpath "$dir")" "$out/''${dir##*/}"; done
       '' else
       runCommandLocal "vendor-registry" { } ''
         mkdir -p $out
