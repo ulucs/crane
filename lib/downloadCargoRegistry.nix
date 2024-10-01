@@ -4,7 +4,7 @@
 , lib
 }:
 
-{ packages }:
+{ packages, overrideVendorCargoPackage ? _: d: d }:
 let
   getTarball = ({ name, version, checksum, ... }@args:
     let
@@ -19,17 +19,25 @@ let
       });
     });
 
-  tarballs = map getTarball packages;
+  fakeDrv = {
+    overrideAttrs = f: f { };
+  };
 
-  extract = (tarball:
-    let outPath = "$out/${lib.escapeShellArg "${tarball.name}-${tarball.version}"}";
+  extract = (package:
+    let
+      tarball = getTarball package;
+      outPath = "$out/${lib.escapeShellArg "${tarball.name}-${tarball.version}"}";
+      drv = overrideVendorCargoPackage package fakeDrv;
     in ''
       mkdir -p ${outPath}
       tar -xf ${tarball.tarball} -C ${outPath} --strip-components=1
-      echo '{"files":{}, "package":"${tarball.checksum}"}' > ${outPath}/.cargo-checksum.json
+      pushd ${outPath}
+      echo '{"files":{}, "package":"${tarball.checksum}"}' > .cargo-checksum.json
+      ${drv.patchPhase or ""}
+      popd
     '');
 in
 runCommand "extract-cargo-packages" { } ''
   mkdir -p $out
-  ${lib.strings.concatMapStrings extract tarballs}
+  ${lib.strings.concatMapStrings extract packages}
 ''
