@@ -1,4 +1,5 @@
 { lib
+, stdenv
 , pkgsBuildBuild
 , vendorCargoRegistries
 , vendorGitDeps
@@ -34,7 +35,7 @@ in
 , outputHashes ? { }
 , overrideVendorCargoPackage ? _: drv: drv
 , overrideVendorGitCheckout ? _: drv: drv
-, macosSandboxWorkaround ? false
+, macosSandboxWorkaround ? stdenv.isDarwin
 , registries ? null
 }:
 let
