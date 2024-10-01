@@ -46,7 +46,7 @@ in
 { cargoConfigs ? [ ]
 , lockPackages
 , overrideVendorCargoPackage ? _: drv: drv
-, macosSandboxWorkaround ? false
+, macosSandboxWorkaround ? stdenv.isDarwin
 , ...
 }@args:
 let
