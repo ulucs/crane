@@ -92,6 +92,8 @@ to influence its behavior.
 * `src`: set to the result of `mkDummySrc` after applying the arguments set.
   This ensures that we do not need to rebuild the cargo artifacts derivation
   whenever the application source changes.
+* `CRANE_BUILD_DEPS_ONLY` is exported as an environment variable, in case this
+  is handy for scripts or hooks which may want to customize how they run
 
 #### Optional attributes
 * `buildPhaseCargoCommand`: A command to run during the derivation's build
@@ -507,6 +509,27 @@ environment variables during the build, you can bring them back via
 * `cargoDocExtraArgs`
 * `cargoExtraArgs`
 
+### `craneLib.cargoDocTest`
+
+`cargoDocTest :: set -> drv`
+
+Create a derivation which will run a `cargo test --doc` invocation in a cargo
+workspace. To run all or any tests for a workspace, consider `cargoTest`.
+
+Except where noted below, all derivation attributes are delegated to
+* `buildPhaseCargoCommand` will be set to run `cargo test --profile release` in
+  the workspace.
+  - `CARGO_PROFILE` can be set on the derivation to alter which cargo profile is
+    selected; setting it to `""` will omit specifying a profile altogether.
+* `pnameSuffix` will be set to `"-doctest"`
+
+#### Optional attributes
+* `cargoExtraArgs`: additional flags to be passed in the cargo invocation
+  - Default value: `"--locked"`
+* `cargoTestExtraArgs`: additional flags to be passed in the cargo
+  invocation
+  - Default value: `""`
+
 ### `craneLib.cargoFmt`
 
 `cargoFmt :: set -> drv`
@@ -629,7 +652,9 @@ environment variables during the build, you can bring them back via
 `cargoNextest :: set -> drv`
 
 Create a derivation which will run a `cargo nextest` invocation in a cargo
-workspace.
+workspace. Note that [`cargo nextest` doesn't run
+doctests](https://github.com/nextest-rs/nextest/issues/16), so you may also
+want to build a `cargoDocTest` derivation.
 
 Except where noted below, all derivation attributes are delegated to
 `mkCargoDerivation`, and can be used to influence its behavior.
@@ -748,9 +773,17 @@ Except where noted below, all derivation attributes are delegated to
 #### Optional attributes
 * `cargoExtraArgs`: additional flags to be passed in the cargo invocation
   - Default value: `"--locked"`
-* `cargoTestArgs`: additional flags to be passed in the cargo
+* `cargoTestExtraArgs`: additional flags to be passed in the cargo
   invocation
   - Default value: `""`
+
+#### Remove attributes
+The following attributes will be removed before being lowered to
+`mkCargoDerivation`. If you absolutely need these attributes present as
+environment variables during the build, you can bring them back via
+`.overrideAttrs`.
+* `cargoExtraArgs`
+* `cargoTestExtraArgs`
 
 #### Remove attributes
 The following attributes will be removed before being lowered to
