@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: cachix/install-nix-action@V27
+    - uses: cachix/install-nix-action@v29
       with:
         install_url: ${{ matrix.install_url }}
     - uses: cachix/cachix-action@v15
@@ -50,7 +50,7 @@ jobs:
     - name: flake checks
       run: nix develop --accept-flake-config --command ./ci/fast-flake-check.sh . ${{ matrix.nixpkgs-override }}
     - name: extra tests
-      run: nix develop --accept-flake-config ${{ matrix.nixpkgs-override }} --command ./extra-tests/test.sh
+      run: nix develop --accept-flake-config --command ./extra-tests/test.sh
 
   examples-linux:
     strategy:
@@ -74,7 +74,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: cachix/install-nix-action@V27
+    - uses: cachix/install-nix-action@v29
       with:
         #install_url: https://nixos.org/nix/install
         # The latest nix releases keep being broken, stick to what's in NixOS
@@ -98,7 +98,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: cachix/install-nix-action@V27
+    - uses: cachix/install-nix-action@v29
       with:
         #install_url: https://nixos.org/nix/install
         # The latest nix releases keep being broken, stick to what's in NixOS
@@ -115,7 +115,6 @@ jobs:
         rm ./examples/.gitignore
         nix develop .# --accept-flake-config --command bash -c '
           set -euo pipefail
-          chosenNixpkgs="$(./ci/ref-from-lock.sh ./test#nixpkgs-darwin)"
           for f in $(find ./examples -maxdepth 1 -mindepth 1 -type d -not -name build-std -not -name cross-musl -not -name cross-rust-overlay | sort -u); do
             # NB: nix-eval-jobs appears broken on darwin atm?
             # /nix/store/2419grj384lg233jqchamm73il9iyjxg-libcxx-16.0.6-dev/include/c++/v1/optional:962: assertion this->has_value() failed: optional operator* called on a disengaged valueerror: error: while checking worker process, evaluation worker got killed by signal 6 (Abort trap: 6)
@@ -124,7 +123,6 @@ jobs:
               --print-build-logs \
               --reference-lock-file ./test/flake.lock \
               --override-input crane ./. \
-              --override-input nixpkgs "${chosenNixpkgs}" \
               "${f}"
           done
         '
@@ -133,7 +131,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: cachix/install-nix-action@V27
+    - uses: cachix/install-nix-action@v29
     - uses: DeterminateSystems/magic-nix-cache-action@main
     - name: check for dead code
       run: nix run github:astro/deadnix -- .
@@ -142,7 +140,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: cachix/install-nix-action@V27
+    - uses: cachix/install-nix-action@v29
     - uses: DeterminateSystems/magic-nix-cache-action@main
     - name: check formatting
       run: nix fmt --accept-flake-config -- --check .

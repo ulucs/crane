@@ -1,4 +1,5 @@
 { lib
+, stdenv
 , pkgsBuildBuild
 , vendorCargoRegistries
 , vendorGitDeps
@@ -34,6 +35,7 @@ in
 , outputHashes ? { }
 , overrideVendorCargoPackage ? _: drv: drv
 , overrideVendorGitCheckout ? _: drv: drv
+, macosSandboxWorkaround ? stdenv.isDarwin
 , registries ? null
 }:
 let
@@ -61,7 +63,7 @@ let
   )));
 
   vendoredRegistries = vendorCargoRegistries ({
-    inherit cargoConfigs lockPackages overrideVendorCargoPackage;
+    inherit cargoConfigs lockPackages overrideVendorCargoPackage macosSandboxWorkaround;
   } // optionalAttrs (registries != null) { inherit registries; });
 
   vendoredGit = vendorGitDeps {
