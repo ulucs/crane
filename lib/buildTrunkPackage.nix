@@ -20,9 +20,9 @@ let
 
     buildTrunkPackage {
       wasm-bindgen-cli = pkgs.wasm-bindgen-cli.override {
-        version = "0.2.84";
-        hash = "sha256-0rK+Yx4/Jy44Fw5VwJ3tG243ZsyOIBBehYU54XP/JGk=";
-        cargoHash = "sha256-vcpxcRlW1OKoD64owFF6mkxSqmNrvY+y3Ckn5UwEQ50=";
+        version = "${default-wasm-bindgen-cli.version}";
+        hash = "${default-wasm-bindgen-cli.hash or "lib.fakeHash"}";
+        cargoHash = "${default-wasm-bindgen-cli.cargoHash or "lib.fakeHash"}";
       };
       ...
     }
@@ -81,7 +81,7 @@ mkCargoDerivation (args // {
     echo "TRUNK_TOOLS_WASM_OPT=''${TRUNK_TOOLS_WASM_OPT}"
   '';
 
-  buildPhaseCargoCommand = args.buildPhaseCommand or ''
+  buildPhaseCargoCommand = args.buildPhaseCargoCommand or ''
     local profileArgs=""
     if [[ "$CARGO_PROFILE" == "release" ]]; then
       profileArgs="--release${lib.optionalString (lib.versionAtLeast trunk.version "0.21") "=true"}"

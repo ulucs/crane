@@ -4,10 +4,6 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
-    # The version of wasm-bindgen-cli needs to match the version in Cargo.lock
-    # Update this to include the version you need
-    nixpkgs-for-wasm-bindgen.url = "github:NixOS/nixpkgs/4e6868b1aa3766ab1de169922bb3826143941973";
-
     crane.url = "github:ipetkov/crane";
 
     flake-utils.url = "github:numtide/flake-utils";
@@ -18,7 +14,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, crane, flake-utils, rust-overlay, nixpkgs-for-wasm-bindgen, ... }:
+  outputs = { self, nixpkgs, crane, flake-utils, rust-overlay, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -33,11 +29,7 @@
           # wasm32-unknown-unknown is required for trunk.
           targets = [ "wasm32-unknown-unknown" ];
         };
-        craneLib = ((crane.mkLib pkgs).overrideToolchain rustToolchainFor).overrideScope (_final: _prev: {
-          # The version of wasm-bindgen-cli needs to match the version in Cargo.lock. You
-          # can unpin this if your nixpkgs commit contains the appropriate wasm-bindgen-cli version
-          inherit (import nixpkgs-for-wasm-bindgen { inherit system; }) wasm-bindgen-cli;
-        });
+        craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchainFor;
 
         # When filtering sources, we want to allow assets other than .rs files
         unfilteredRoot = ./.; # The original, unfiltered source
@@ -107,12 +99,26 @@
         myClient = craneLib.buildTrunkPackage (wasmArgs // {
           pname = "trunk-workspace-client";
           cargoArtifacts = cargoArtifactsWasm;
-          trunkIndexPath = "client/index.html";
+          # Trunk expects the current directory to be the crate to compile
+          preBuild = ''
+            cd ./client
+          '';
+          # After building, move the `dist` artifacts and restore the working directory
+          postBuild = ''
+            mv ./dist ..
+            cd ..
+          '';
           # The version of wasm-bindgen-cli here must match the one from Cargo.lock.
           wasm-bindgen-cli = pkgs.wasm-bindgen-cli.override {
             version = "0.2.93";
             hash = "sha256-DDdu5mM3gneraM85pAepBXWn3TMofarVR4NbjMdz3r0=";
             cargoHash = "sha256-birrg+XABBHHKJxfTKAMSlmTVYLmnmqMDfRnmG6g/YQ=";
+            # When updating to a new version comment out the above two lines and
+            # uncomment the bottom two lines. Then try to do a build, which will fail
+            # but will print out the correct value for `hash`. Replace the value and then
+            # repeat the process but this time the printed value will be for `cargoHash`
+            # hash = lib.fakeHash;
+            # cargoHash = lib.fakeHash;
           };
         });
       in

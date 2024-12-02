@@ -260,6 +260,20 @@ in
       touch $out
     '';
 
+  customDummy = myLib.buildDepsOnly {
+    dummySrc = pkgs.stdenv.mkDerivation {
+      pname = "custom-dummy";
+      version = "0.0.0";
+      src = myLib.cleanCargoSource ./simple;
+      postInstall = ''
+        mkdir -p $out
+        cp -r . $out
+        echo 'fn main() {}' > $out/src/main.rs
+        find $out
+      '';
+    };
+  };
+
   # https://github.com/ipetkov/crane/pull/234
   nonJsonCargoBuildLog =
     let
@@ -455,7 +469,7 @@ in
     lib.optionalAttrs x64Linux (noStdLib.buildPackage {
       src = noStdLib.cleanCargoSource ./no_std;
       CARGO_BUILD_TARGET = "x86_64-unknown-none";
-      cargoCheckExtraArgs = "--lib --bins --examples";
+      cargoCheckExtraArgs = "--bins --examples";
       doCheck = false;
     });
 
@@ -471,7 +485,7 @@ in
     lib.optionalAttrs x64Linux (bindepsLib.buildPackage {
       src = bindepsLib.cleanCargoSource ./bindeps;
       CARGO_BUILD_TARGET = "x86_64-unknown-none";
-      cargoCheckExtraArgs = "--lib --bins --examples";
+      cargoCheckExtraArgs = "--bins --examples";
       doCheck = false;
     });
 
@@ -792,6 +806,13 @@ in
   workspaceRoot = myLib.buildPackage {
     src = myLib.cleanCargoSource ./workspace-root;
     pname = "workspace-root";
+  };
+
+  # https://github.com/ipetkov/crane/issues/268
+  workspaceRootSpecificBin = myLib.buildPackage {
+    src = myLib.cleanCargoSource ./workspace-root;
+    pname = "workspace-root";
+    cargoExtraArgs = "--bin print";
   };
 
   workspaceGit = myLib.buildPackage {

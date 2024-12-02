@@ -6,6 +6,30 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+* **Breaking**: dropped compatibility for Nix versions below 2.24.10
+* **Breaking**: dropped compatibility for nixpkgs-23.11
+* `mkDummySrc` has been reworked to match cargo's `autobin` detection logic,
+  meaning that only real binary targets defined by the project will be dummified
+  if they exist (no more injecting `src/bin/crane-dummy-*`). This does mean that
+  adding a new bin target definition will invalidate caches and require
+  rebuilding all dependencies once more. (If this is a frequent enough
+  occurrence for your project to cause headaches, please open an issue!)
+
+## [0.19.4] - 2024-11-30
+
+### Fixed
+* `removeReferencesToVendoredSources` now deduplicates any found references to
+  avoid pathological memory usage before removing them.
+* `buildDepsOnly` will calculate fallback `pname`/`version`/`cargoVendorDir`
+  attributes using `dummySrc` if it was specified (rather than attempting to use
+  `src`)
+
+## [0.19.3] - 2024-11-18
+A republish of 0.19.2 which was incorrectly tagged.
+
+## [0.19.2] - 2024-11-18
+
 ### Added
 * Added a number of fileset helpers to more easily compose source filtering:
    * `fileset.cargoTomlAndLock`: for `Cargo.toml` and `Cargo.lock` files
@@ -17,6 +41,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 * `buildTrunkPackage` will pass in `--release=true` (instead of just
   `--release`) for trunk versions 0.21 or higher to avoid argument ambiguities
+* `buildTrunkPackage` will now correctly honor `buildPhaseCargoCommand` if
+  specified (previously the value of `buildPhaseCommand` was incorrectly being
+  used)
 * `removeReferencesToVendoredSourcesHook` avoids referencing `/dev/fd`
   directly since it may not be present on certain platforms
 
@@ -776,15 +803,18 @@ files parsed as nix attribute sets.
 ## 0.1.0 - 2022-01-22
 - First release
 
-[0.19.1]: https://github.com/ipetkov/crane/compare/v0.19.0...v1.19.1
-[0.19.0]: https://github.com/ipetkov/crane/compare/v0.18.1...v1.19.0
-[0.18.1]: https://github.com/ipetkov/crane/compare/v0.18.0...v1.18.1
-[0.18.0]: https://github.com/ipetkov/crane/compare/v0.17.3...v1.18.0
-[0.17.3]: https://github.com/ipetkov/crane/compare/v0.17.2...v1.17.3
-[0.17.2]: https://github.com/ipetkov/crane/compare/v0.17.1...v1.17.2
-[0.17.1]: https://github.com/ipetkov/crane/compare/v0.17.0...v1.17.1
-[0.17.0]: https://github.com/ipetkov/crane/compare/v0.16.6...v1.17.0
-[0.16.6]: https://github.com/ipetkov/crane/compare/v0.16.5...v1.16.6
+[0.19.4]: https://github.com/ipetkov/crane/compare/v0.19.3...v0.19.4
+[0.19.3]: https://github.com/ipetkov/crane/compare/v0.19.2...v0.19.3
+[0.19.2]: https://github.com/ipetkov/crane/compare/v0.19.1...v0.19.2
+[0.19.1]: https://github.com/ipetkov/crane/compare/v0.19.0...v0.19.1
+[0.19.0]: https://github.com/ipetkov/crane/compare/v0.18.1...v0.19.0
+[0.18.1]: https://github.com/ipetkov/crane/compare/v0.18.0...v0.18.1
+[0.18.0]: https://github.com/ipetkov/crane/compare/v0.17.3...v0.18.0
+[0.17.3]: https://github.com/ipetkov/crane/compare/v0.17.2...v0.17.3
+[0.17.2]: https://github.com/ipetkov/crane/compare/v0.17.1...v0.17.2
+[0.17.1]: https://github.com/ipetkov/crane/compare/v0.17.0...v0.17.1
+[0.17.0]: https://github.com/ipetkov/crane/compare/v0.16.6...v0.17.0
+[0.16.6]: https://github.com/ipetkov/crane/compare/v0.16.5...v0.16.6
 [0.16.5]: https://github.com/ipetkov/crane/compare/v0.16.4...v0.16.5
 [0.16.4]: https://github.com/ipetkov/crane/compare/v0.16.3...v0.16.4
 [0.16.3]: https://github.com/ipetkov/crane/compare/v0.16.2...v0.16.3

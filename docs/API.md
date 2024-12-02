@@ -130,7 +130,8 @@ to influence its behavior.
   be consumed without network access. Directory structure should basically
   follow the output of `cargo vendor`.
   - Default value: the result of `vendorCargoDeps` after applying the arguments
-    set (with the respective default values)
+    set (with the respective default values). Note if `dummySrc` is specified,
+    it will be used as the `src` passed into `vendorCargoDeps`
 * `checkPhaseCargoCommand`: A command to run during the derivation's check
   phase. Pre and post check hooks will automatically be run.
   - Default value: `"${cargoTestCommand} ${cargoExtraArgs}"`
@@ -140,9 +141,13 @@ to influence its behavior.
   Automatically derived if not passed in
   - Default value: `mkDummySrc args.src`
 * `pname`: package name of the derivation
-  - Default value: inherited from calling `crateNameFromCargoToml`
+  - Default value: inherited from calling `crateNameFromCargoToml`. Note if
+    `dummySrc` is specified, it will be used as the `src` passed into
+    `crateNameFromCargoToml`
 * `version`: version of the derivation
-  - Default value: inherited from calling `crateNameFromCargoToml`
+  - Default value: inherited from calling `crateNameFromCargoToml`. Note if
+    `dummySrc` is specified, it will be used as the `src` passed into
+    `crateNameFromCargoToml`
 
 #### Remove attributes
 The following attributes will be removed before being lowered to
@@ -1263,6 +1268,9 @@ build caches. More specifically:
   - Any changes to the `[package]` definition such as name and version
   - Any changes to the name or path of any target (such as benches, bins,
     examples, libs, or tests)
+  - Any removal or new definition of a `[[bin]]` target, or, any removal or new
+    definition of a file under `src/bin` when `autolib` is enabled in the
+    `Cargo.toml` file (this setting is `true` by default)
 
 #### Required attributes
 * `src`: a source directory which should be turned into a "dummy" form
