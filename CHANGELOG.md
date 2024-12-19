@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 * `mkDummySrc` will deduplicate discovered and declared binary targets when
   dummifying sources
+* `crateNameFromCargoToml` will ignore store contexts when parsing a Cargo.toml
+  file (avoiding errors like `the string ... is not allowed to refer to a store
+  path`).
+* `vendorGitDeps` will perform a basic URL-decoding of git dependency entries in
+  the `Cargo.lock` file since lockfiles now encode special characters starting
+  at version 4
 
 ### Meta
 * Dropped support for publishing releases to https://flakestry.dev/
