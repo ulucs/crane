@@ -6,9 +6,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+* `cargoNextest` now supports passing `cargoNextestPartitionsExtraArgs` to each
+  `cargo nextest` partition run.
+* Add self-reference `craneLib` to crane lib instance.
+
+## [0.20.0] - 2024-12-21
+
 ### Changed
 * **Breaking**: dropped compatibility for Nix versions below 2.24.10
 * **Breaking**: dropped compatibility for nixpkgs-23.11
+* **Breaking** (technically): `buildPackage`'s installation behavior has been
+  split into two steps: binaries are now installed into a temporary directory as
+  a post build hook (to avoid interference from the check phase clobbering
+  resultant binaries with development features enabled) followed by an actual
+  installation (from said directory) during the install phase. If you use a
+  custom build phase with `buildPackage` you may need to ensure the additional
+  post build hook defined in `installFromCargoBuildLogHook` runs (or follow the
+  error messages to resolve any build issues).
 * `mkDummySrc` has been reworked to match cargo's `autobin` detection logic,
   meaning that only real binary targets defined by the project will be dummified
   if they exist (no more injecting `src/bin/crane-dummy-*`). This does mean that
@@ -816,6 +831,7 @@ files parsed as nix attribute sets.
 ## 0.1.0 - 2022-01-22
 - First release
 
+[0.20.0]: https://github.com/ipetkov/crane/compare/v0.19.4...v0.20.0
 [0.19.4]: https://github.com/ipetkov/crane/compare/v0.19.3...v0.19.4
 [0.19.3]: https://github.com/ipetkov/crane/compare/v0.19.2...v0.19.3
 [0.19.2]: https://github.com/ipetkov/crane/compare/v0.19.1...v0.19.2
