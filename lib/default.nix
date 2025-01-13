@@ -130,6 +130,7 @@ let
       registryFromDownloadUrl = callPackage ./registryFromDownloadUrl.nix { };
       registryFromGitIndex = callPackage ./registryFromGitIndex.nix { };
       registryFromSparse = callPackage ./registryFromSparse.nix { };
+      removeReferencesToRustToolchainHook = callPackage ./setupHooks/removeReferencesToRustToolchain.nix { };
       removeReferencesToVendoredSourcesHook = callPackage ./setupHooks/removeReferencesToVendoredSources.nix { };
       replaceCargoLockHook = callPackage ./setupHooks/replaceCargoLockHook.nix { };
       taploFmt = callPackage ./taploFmt.nix { };
